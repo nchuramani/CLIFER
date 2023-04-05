@@ -134,3 +134,7 @@ dmypy.json
 # TrainedModels
 KEF/Models/Trained_Model
 KEF/Models/VGG
+
+# DS Store
+.DS_Store
+*/.DS_Store
