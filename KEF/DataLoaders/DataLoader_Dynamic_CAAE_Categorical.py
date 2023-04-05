@@ -14,8 +14,7 @@ def preProcess(dataLocation, imageSize, grayScale, face=None, dset="Affect"):
 
     try:
 
-        frame = cv2.imread(dataLocation)#'.astype(numpy.float32)
-        # frame = numpy.array(Image.open(dataLocation))
+        frame = cv2.imread(dataLocation)
         if face is not None:
             face = list(map(int,face))
             try:
@@ -27,49 +26,29 @@ def preProcess(dataLocation, imageSize, grayScale, face=None, dset="Affect"):
                 input("ISSUE Face")
                 data = frame
         else:
-            if dset.startswith("CK"):
-                # if grayScale:
-                #     data = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
-
-                detector = dlib.get_frontal_face_detector()
-                dets = detector(frame, 1)
-                # print("Number of faces detected: {}".format(len(dets)))
-                if len(dets) > 0:
-                    for i, d in enumerate(dets):
-                        data = frame[d.top():d.bottom(), d.left():d.right()]
-                        break
-                else:
-                    data = frame
-                # data = numpy.expand_dims(frame, axis=-1)
-            else:
-                data = frame
+            data = frame
 
 
     except Exception as e:
         print(dataLocation)
         print(e)
-        input("ISSUE Loading")
+        input("Image Loading Failed.")
 
     try:
-        # if numpy.random.random_sample() > 0.6:
-        #     data = cv2.flip(data, 1)
         data = imresize(data, imageSize)
     except Exception as e:
         print(data.shape)
         print(e)
         print(dataLocation)
-        input("ISSUE REsizing")
+        input("Image Resizing failed.")
 
     if  grayScale:
         data = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
         data = numpy.expand_dims(data, axis=-1)
-    # elif dset.startswith("CK"):
-    #     data = numpy.expand_dims(data, axis=-1)
 
     data = data.astype(numpy.float32)
 
 
-    # data = (data - 127.5) / 127.5
     data = data * 2. / 255. - 1.
 
     return data
@@ -104,18 +83,10 @@ class DataGenerator(Sequence):
         # try:
         if self.faces is not None:
             batch_faces = self.faces[idx * self.batch_size:(idx + 1) * self.batch_size]
-            # batch = np.array([
-            #     preProcess(file_name, self.imageSize, self.grayScale, face)
-            #     for file_name, face in zip(batch_x, batch_faces)]), [np.array(batch_y[:, 0]), np.array(batch_y[:, 1])]
-
             batch = np.array([
                 preProcess(file_name, self.imageSize, self.grayScale, face, dset=self.dset)
                 for file_name, face in zip(batch_x, batch_faces)]), batch_y
         else:
-            # batch = np.array([
-            #     preProcess(file_name, self.imageSize, self.grayScale)
-            #     for file_name in batch_x]), [np.array(batch_y[:, 0]), np.array(batch_y[:, 1])]
-
             batch = np.array([
                 preProcess(file_name, self.imageSize, self.grayScale, dset=self.dset)
                 for file_name in batch_x]), batch_y
